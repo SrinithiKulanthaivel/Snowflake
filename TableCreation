@@ -1,1 +1,58 @@
-create table tableName;
+Three types of tables in Snowflake.
+  Permanent Table 
+  Temporary Table 
+  Transient Table 
+Permanent Table - Default table
+  - support Fail-safe (7 days data retention) 
+  - support TimeTravel (90 days Restoring Object like db/Schema/table)and Backing up data from a certain time).
+Temporary Table - Store non permanent or transitory data. Available within a Session. 
+Transient Table - Similar to Temporary table but data will be there until explicitly dropped. accessed beyond the session
+
+Views - Helps in easy understanding of the table.
+  - combine multiple table and fetch the required column. 
+  - Can create view and give access using secure views
+  - Two type of views non-materalized view and materalized view.(each time scan all the tables and fetch the result and also perform join operation)
+  - Materalized view for complex operations and aggregate functions (result will be stored in disk and fast retrival and cannot perform Join in MV)
+
+Tables : ###########################################################################################################################################################
+use role sysadmin;
+
+create database if not exists ecommerse_db;
+create schema if not exists ecommerse_liv;
+use schema ECOMMERSE_DB.ECOMMERSE_LIV;
+
+use warehouse compute_wh;
+
+create or replace table orders as select * from snowflake_sample_data.tpch_sf1000.orders;
+
+create or replace table lineItem cluster by (L_shipdate) as select * from snowflake_sample_data.tpch_sf1000.lineitem limit 2000000;
+
+create or replace temporary table orders_tmp as select * from ECOMMERSE_DB.ECOMMERSE_LIV.ORDERS limit 50;  // these tables will be deleted once we logoff.
+
+create or replace transient table orders_trans as select * from ECOMMERSE_DB.ECOMMERSE_LIV.ORDERS limit 50; // tables won't be removed until explictly delete 
+
+create or replace transient schema ecom_transient_schema;
+use schema ecom_transient_schema;
+
+create or replace table lineItem cluster by (L_shipdate) as select * from snowflake_sample_data.tpch_sf1000.lineitem limit 200;  // by default it will create transient table. 
+
+create or replace transient database ecom_transient_db; // inside we can create schema and tables which are by default transient. 
+
+// we can also convert permanent tables into transient table to reduce cost
+// By default permanent tables supports Fail-Safe (7) and Time-Travel (90). it take cost.
+// so we can convert permanent table to transient and avoid high cost. 
+
+
+Views ::: ###########################################################################################################################################
+
+use warehouse compute_wh_elarge;
+use database ecommerse_db;
+use schema ecommerse_liv;
+create or replace view view_order as select * from ECOMMERSE_DB.ECOMMERSE_LIV.ORDERS limit 500 ;
+
+create or replace secure view view_order_secure as select * from ECOMMERSE_DB.ECOMMERSE_LIV.ORDERS limit 500 ;
+
+create or replace materialized view Mview_order as 
+select O_ORDERSTATUS, O_ORDERDATE
+from ECOMMERSE_DB.ECOMMERSE_LIV.ORDERS
+where o_orderpriority='1-URGENT';
