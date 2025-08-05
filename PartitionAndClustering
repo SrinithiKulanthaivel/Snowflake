@@ -1,0 +1,40 @@
+Partition - dividing huge dataset/tables into smaller chunks, so that each part can manipulated independently.
+  - snowflake by default divide the data in the table into small chunks range from 50 MB to 500MB
+  - Metadata of each partitions stored in Cloud Service Layer.
+      - Meta data contain range of values in each partition, no of unique value and properties for efficient query processing and data scanning. 
+
+Clustering - process of optimize data retrieval.
+  - performed on micro-partition to ensure similar data stored in the same micro partition and retrived using single query
+  - Clustering Key - column or group of cloumn that are designed to locate the data in micro-partition.
+  - Pruning is process of snowflake avoid scanning the unnecessary micro-partition using clustering Key in the where clause. 
+
+Usually snowflake divide the table data into micro partition by default and we can also partition the data which will be very useful in querying.
+And while clustering we need to select the column which are not very frequent 
+eg - if we select time - then each row is a different micro partition - Bad approach (High cardinality)
+  -  if we select Month - all the record of each month will store in separate partition - Good approach. (Low Cardinality)
+
+
+use warehouse compute_wh;
+use schema snowflake_sample_data.tpch_sf1000;
+
+select system$clustering_information('Lineitem'); // it will show the clustered table information
+
+show tables like '%line%' // snow the table information in table format.
+
+select * from lineitem where l_shipdate='1998-12-01' limit 20000;
+
+// if we give the correct partition id in the where then it will check only in those partition
+// if we give random where condition it will check in all the partation.
+// That too based on limit. if the limit is less then only in one partation
+// if the limit is high then multiple partition. 
+// By default snowflake maintain a partition and we can also partition the data. 
+// after executing the query we can click on the query Id and check how the data executed.
+    -- - how many % came from cache.
+    -- - how many % came from disk
+    -- - how many partition used for scanning. 
+    -- - we can also clear the cache and check the result. 
+
+
+
+
+
