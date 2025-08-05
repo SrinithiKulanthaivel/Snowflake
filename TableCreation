@@ -52,7 +52,38 @@ create or replace view view_order as select * from ECOMMERSE_DB.ECOMMERSE_LIV.OR
 
 create or replace secure view view_order_secure as select * from ECOMMERSE_DB.ECOMMERSE_LIV.ORDERS limit 500 ;
 
-create or replace materialized view Mview_order as 
-select O_ORDERSTATUS, O_ORDERDATE
-from ECOMMERSE_DB.ECOMMERSE_LIV.ORDERS
-where o_orderpriority='1-URGENT';
+
+create or replace materialized view Mview_order as select O_ORDERSTATUS, O_ORDERDATE
+from ECOMMERSE_DB.ECOMMERSE_LIV.ORDERS where o_orderpriority='1-URGENT';
+
+
+Role & Access :::################################################################################################################################################
+
+use role accountadmin;
+create or replace role view_role;// creating a role
+
+grant usage on warehouse compute_wh to role view_role;  // granting access
+grant usage on database ecommerse_db to role view_role;
+grant usage on schema ecommerse_liv to role view_role;
+
+grant select on ECOMMERSE_DB.ECOMMERSE_LIV.LINEITEM to role view_role;
+
+grant role view_role to user srinithi;  // granting the role to user
+show grants to user srinithi;    // shows all the roles to the user
+
+use role view_role;  // using the role
+select * from ECOMMERSE_DB.ECOMMERSE_LIV.LINEITEM limit 10
+
+################################## why role allows to access #########################################################################
+
+
+Why is view_role not restricting anything?  --Because Snowflake roles are additive, not restrictive.
+
+Even if you grant a limited role, the user can still access other objects if:
+
+They have additional roles assigned (like SYSADMIN, PUBLIC, etc.).
+
+They are using a role that inherits privileges from higher-privileged roles.
+
+The object is accessible through the PUBLIC role, which is automatically assigned to all users.
+
