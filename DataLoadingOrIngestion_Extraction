@@ -1,0 +1,99 @@
+Data Ingestion or Loading into Snowflake
+  - Create Stage and Integration Objects
+  - Ingest data from different file formats (CSV, Json, Parquet)
+  - Snowpipe - Automatic data ingestion into snowflake tables. 
+Two types of data loading .
+  Batch Bulk data ingestion
+  Real-time data ingestion
+
+Batch Bulk Data Ingestion
+  Write/load data into staging location (s3 , GCS buckets)
+  insert Batch data into snowflake at frequent time intervals. 
+  snowflake copy command scheduled using snowflake tasks
+  Trigger copy command uisng python/Glue/Airflow running at specified time interval.
+
+Real-time Data Ingestion
+  Write/load data into staging location(s3, GCS buckets)
+  Ingest the data in real-time using 
+    snowpipe (continuous data ingestion)
+    Airflow s3 sensors/triggers
+  Kafka-snowflake connector for real-time data ingestion.
+
+Snowflake - AWS Connection
+
+Step 1 : Create an IAM role for snowflake to access data in S3 bucket (in AWS create a role with full access for S3).
+Step 2 : Create S3 Bucket in AWS and upload sample file into the bucket.
+Step 3 : Create an Integration Object in Snowflake for authentication (using AccountAdmin role)
+Step 4 : Create a file formatObject  ( using Sysadmin/Custom Role)
+Step 5 : Create a stage Object referencing the location from which the data needs to be ingested. 
+Step 6 : Load the data into Snowflake tables.
+
+Step 3 : 
+  "create or replace STORAGE INTEGRATION "NameOfIntegeration"
+  type = EXTERNAL_STAGE
+  storage_provider = S3
+  enabled = TRUE
+  storage_aws_role_arn = "insideTheRoleArn"
+  storage_allowed_locations = ('s3://bucketName/')"
+
+desc Integration "NameOfIntegeration";
+This command will display all the details of the integration object
+copy 5(iam) and 7(externalId) item 
+And in aws -> role -> trust policy -> update the Iam and externalId.
+
+
+Step 4 : 
+Create FILE FORMAT "formatName"
+type ='CSV'
+compression - 'AUTO'
+field_delimiter =','
+recored_delimiter='\n'
+skip_header=1
+field_optionally_enclosed_by = '\042'
+trim_space = false
+errror_on_column_count_mismatch = true
+escape ='NONE'
+escape_unenclosed_field = '\134'
+Date_format ='AUTO'
+Timestamp_format ='AUTO';
+
+Step 5:
+Create stage "NameOfStage"
+storage_integration = "NameOfIntegeration"
+url = "s3 bucket url "
+file_format = "formatName";
+
+List @"NameOfStage" // will list the items in stage
+
+
+Step 6:
+copy into newtable
+from @"NameOfStage"
+on_error = abort_statement;
+
+In CSV we can directly copy the values into the table. 
+In Json (semi - structured or Non - structured) we cannot directly insert into table. 
+For that we need to create an another table using varient field (one field )and then move to the main table. 
+
+create or replace table "newTableTemp"(srcfield variant);  // table created with one field 
+
+copy into newTableTemp
+from @"NameOfStage"
+on_error = abort_statement;
+
+select * from newTableTemp limit 10;
+
+select srcField:L_name, scrField:L_salary from "newTableTemp"     // selecting uisng new table temp table.
+
+insert into "newTable" select srcField:L_name, scrField:L_salary from "newTableTemp"  // inseting the data from temptable to new table. 
+
+
+The above approach is for Batch Bulk data ingestion.
+For real-time data ingestion we can achieve it using SnowPipe.
+
+
+create or replace PIPE "nameofPipe" auto_ingest = true as
+copy into "newTable" from @"NameOfStage" on error = continue;  // commnet will create a pIpe and it will ingest the data whenever new data got inserted into the s3 bucket mentioned path.
+And in the s3 bucket also we need to set an event notification to trigger an alert for the pipe to load the data in real time. 
+
+
