@@ -23,6 +23,15 @@ show tables like '%line%' // snow the table information in table format.
 
 select * from lineitem where l_shipdate='1998-12-01' limit 20000;
 
+alter session set use_cached_result = false;
+
+create or replace table LineItemClusterBig cluster by (L_shipDate)
+as select * from SNOWFLAKE_SAMPLE_DATA.TPCH_SF1000.LINEITEM limit 5000000;
+
+select * from lineitemclusterbig; // this will scan in all partition 
+
+select * from lineitemclusterbig where L_SHIPDATE in ('1992-10-02') // scan in partition in which the L_shipdate matches(2). 
+
 // if we give the correct partition id in the where then it will check only in those partition
 // if we give random where condition it will check in all the partation.
 // That too based on limit. if the limit is less then only in one partation
