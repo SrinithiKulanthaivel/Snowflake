@@ -1,0 +1,101 @@
+use role accountadmin;
+
+create role task_owner;
+
+use warehouse compute_wh_large;
+
+grant usage on warehouse compute_wh_large to role task_owner;
+grant usage on database ecommerse_db to role task_owner;
+grant usage on schema ECOMMERSE_DB.ECOMMERSE_LIV to role task_owner;
+
+grant select on ECOMMERSE_DB.ECOMMERSE_LIV.lineitem to role task_owner;
+grant select on ECOMMERSE_DB.ECOMMERSE_LIV.orders to role task_owner;
+
+grant create task on schema ECOMMERSE_DB.ECOMMERSE_LIV to role task_owner;
+grant execute task on account to role task_owner;
+
+grant ownership on all tasks in schema ECOMMERSE_DB.ECOMMERSE_LIV to role task_owner;
+grant create table on schema ECOMMERSE_DB.ECOMMERSE_LIV to role task_owner;
+
+show users;
+
+create user naveen
+password='srinithi'
+login_name ='naveen'
+default_role =task_owner
+default_warehouse = compute_wh
+default_namespace = ECOMMERSE_DB.ECOMMERSE_LIV
+must_change_password = false;
+
+grant role task_owner to user naveen; // we cannot able to switch user in same session
+
+grant role task_owner to user srinithi;
+use role task_owner;
+
+select * from ECOMMERSE_DB.ECOMMERSE_LIV.lineitemcluster;
+
+
+use database ecommerse_db;y
+use schema ECOMMERSE_DB.ECOMMERSE_LIV;
+use role accountadmin;
+
+
+create or replace table daily_aggregated_summary(
+sum_qty number(24,2),
+total_base_price number(24,2),
+total_discount_price number(37,4),
+total_charge number(38,6),
+order_count number(18,0),
+shipped_date date,
+shipped_mode varchar(10)
+);
+
+
+create or replace table orders_by_shipmode(
+total_orders number(30,0),
+total_discount number(38,0),
+shipped_date date,
+shipped_mode varchar(10)
+);
+
+create task task_daily_aggregiate_summary
+warehouse = compute_wh
+schedule = 'using cron 0 8 * * * UTC' as
+insert into ECOMMERSE_DB.ECOMMERSE_LIV.DAILY_AGGREGATED_SUMMARY
+select
+    sum(l_quantity) as sum_qty,
+    sum(l_extendedprice) as total_base_price,
+    sum(l_extendedprice * (1-l_discount)) as total_discount_price,
+    sum(l_extendedprice * (1-l_discount) * (1+l_tax)) as total_charge,
+    count(*) as order_count,
+    date(l_shipdate) as shipped_date,
+    l_shipmode as shipped_mode
+from ECOMMERSE_DB.ECOMMERSE_LIV.lineitem
+--where shipped_date = '1992-10-31'
+group by shipped_date, shipped_mode;
+
+create task task_order_by_shipmode
+WAREHOUSE = COMPUTE_WH
+AFTER task_daily_aggregiate_summary as
+insert into  ECOMMERSE_DB.ECOMMERSE_LIV.orders_by_shipmode 
+select 
+    round(sum(order_count)) as total_orders,
+    round(sum(total_discount_price),0) as total_discount,
+    shipped_date,
+    shipped_mode
+from daily_aggregated_summary
+group by 3,4;
+
+show tasks;
+alter task task_daily_aggregiate_summary resume;
+alter task task_daily_aggregiate_summary suspend;
+
+alter task task_order_by_shipmode resume;
+alter task task_order_by_shipmode suspend;
+
+
+select * from ECOMMERSE_DB.ECOMMERSE_LIV.lineitem;
+select * from ECOMMERSE_DB.ECOMMERSE_LIV.DAILY_AGGREGATED_SUMMARY;
+
+
+
