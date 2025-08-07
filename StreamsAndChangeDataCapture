@@ -1,0 +1,22 @@
+Change Data Capture - CDC is the process of capturing DML operations (Update, Insert and Delete) in your tablesso that necessary actions can be taken using the changed data. 
+In Snowflake , the process of CDC is achieved uisng streams.
+A Stream (stream table ) makes the changed data available indicating what has chnaged in the source table between two transactional points. 
+
+Aws s3 bucket --------> Raw Table or Stage schema --------> Production table 
+Aws s3 bucket --------snowpipe-----------> Raw Table or Stage schema --------Streams--------> Production table 
+
+
+Snowflake - Change Data Capture
+  - ETL / ELT piplines for incremental data loads
+  - Updating search Index or history 
+  - Streaming Analytics and anomaly detection
+  - Auditing Transaction logs
+  - Any event-driven data platforms.
+
+
+SnowFlake - Stream Types
+  Standard : (default ) track all DML changes to the source table, including Insert, Update and Delete.
+  Append-Only : Tracks row inserts only. 
+  Insert -Only : Same as append-only, but for external tables. 
+
+
