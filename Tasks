@@ -58,7 +58,7 @@ shipped_date date,
 shipped_mode varchar(10)
 );
 
-create task task_daily_aggregiate_summary
+create task task_daily_aggregiate_summary       // creating a new task which is scheduled on time basis  // Need to resume the task by default it will be suspended.
 warehouse = compute_wh
 schedule = 'using cron 0 8 * * * UTC' as
 insert into ECOMMERSE_DB.ECOMMERSE_LIV.DAILY_AGGREGATED_SUMMARY
@@ -74,7 +74,7 @@ from ECOMMERSE_DB.ECOMMERSE_LIV.lineitem
 --where shipped_date = '1992-10-31'
 group by shipped_date, shipped_mode;
 
-create task task_order_by_shipmode
+create task task_order_by_shipmode        // Creating a dependent task which will run after the main task. 
 WAREHOUSE = COMPUTE_WH
 AFTER task_daily_aggregiate_summary as
 insert into  ECOMMERSE_DB.ECOMMERSE_LIV.orders_by_shipmode 
