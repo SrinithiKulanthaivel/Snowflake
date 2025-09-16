@@ -1,0 +1,12 @@
+Roles :
+AccountAdmin : Top-level, granted to limited no.of users.
+SecurityAdmin: Monitor and manage users & roles. - Modify, grant or revoke privileges.
+UserAdmin    : Create User and roles. - Grant Privileges to other roles.
+SysAdmin     : Privileges to create db objects - grant privileges on db objects to other roles.
+OrgAdmin     : Manage Operations at organization level
+Public       : Automatically assigned to all users and roles. 
+
+Snowflake Architecture: 
+      Cloud Service  - Brain of the system, managing infrastructure, access control, security, metadata,....
+      Query Processing - Muscle of the system, Perform Massive Parallel Processing (MPP)
+      Storage - Hybrid Columnar Storage, Stored as blob. 
