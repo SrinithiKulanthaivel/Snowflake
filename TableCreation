@@ -14,6 +14,36 @@ Views - Helps in easy understanding of the table.
   - Two type of views non-materalized view and materalized view.(each time scan all the tables and fetch the result and also perform join operation)
   - Materalized view for complex operations and aggregate functions (result will be stored in disk and fast retrival and cannot perform Join in MV)
 
+
+Creating User and providing roles: ##############################################################################################################################
+
+
+
+use role useradmin;
+
+create or replace role view_role;
+
+grant usage on warehouse compute_wh to role view_role;
+grant usage on database ecommerce_db to role view_role;
+grant usage on schema ecommerce_liv to role view_role;
+
+grant select on ECOMMERCE_DB.ECOMMERCE_LIV.LINEITEMSECUREVIEW to role view_role;
+grant select on ECOMMERCE_DB.ECOMMERCE_LIV.LINEITEMVIEW to role view_role;
+grant select on ECOMMERCE_DB.ECOMMERCE_LIV.MATLINEITEMVIEW to role view_role;
+
+CREATE USER Madhan
+  PASSWORD = 'madhan'
+  DEFAULT_ROLE = 'view_role'
+  DEFAULT_WAREHOUSE = compute_wh
+  DEFAULT_NAMESPACE = ecommerce_db
+  COMMENT = 'Hi Madhan';
+
+  grant role view_role to user Madhan;
+
+  use role view_role;
+
+
+
 Tables : ###########################################################################################################################################################
 use role sysadmin;
 
