@@ -10,3 +10,29 @@ Snowflake Architecture:
       Cloud Service  - Brain of the system, managing infrastructure, access control, security, metadata,....
       Query Processing - Muscle of the system, Perform Massive Parallel Processing (MPP)
       Storage - Hybrid Columnar Storage, Stored as blob. 
+
+Snowflake architectg is hybrid of the following two types. 
+    *  "Shared Disk Database" - Shared memory space through network.
+            Internet -> CPU1, CPU2  ---network-->   Disk1, Disk2,Disk3 
+    *  "Shared Nothing Database". - separate memory space. 
+            Internet -> CPU 1 -> Disk1, Disk2,Disk3
+                     -> CPU 1 -> Disk1, Disk2,Disk3
+
+Object Hierarchy 
+
+Organisation -> Account -> Users
+                        -> Roles
+                        -> Warehouses
+                        -> Databases
+                              -> Schema
+                                    -> Tables
+                                    -> Views
+                                    -> Stage
+                                    -> Stored Procedures
+                                    -> UDF
+
+WareHouse - is a cluster of computing resource. Combination of CPU, Memory & Temp Storage.
+      - Executing sql queries
+      - Data Loading & unloading
+      - Size from xs to 5xl
+      - Two types - Single Cluster & Multi Cluster
