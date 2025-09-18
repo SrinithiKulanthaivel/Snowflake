@@ -36,3 +36,26 @@ WareHouse - is a cluster of computing resource. Combination of CPU, Memory & Tem
       - Data Loading & unloading
       - Size from xs to 5xl
       - Two types - Single Cluster & Multi Cluster
+
+
+User Defined Functions - UDF
+      Extend operations that are not available throught system defined functions
+      Reusable code written in SQL, java, python & java script
+      It is of two types
+            Scalar - function return one output row.
+            Tabular - also called table function return zero, one, or multiple row.
+
+External Functions: 
+      an external function calls  code that is executed outside snowflake.
+      The remotely executed code is known as a remot3e service
+      Information sent to a remote service is usually relayed through a proxy service
+      External functions are the functions that is stored and executed outside snowflake.
+
+Sample program steps: 
+
+step1 : Create a lambda function in AWS and deploy it. 
+step2 : Note the function name and account detail.
+step3 : Create an IAM role to access lambda and note rolename and role arn.
+step4 : Create an API gateway using rest API, in which we will create a method-> Post/Get/Delete/Update and give the lambda function name(already create lambda) and deploy it.and copy the api arn.
+step5 : 
+
