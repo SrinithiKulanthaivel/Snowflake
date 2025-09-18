@@ -1,3 +1,11 @@
+Tasks : Task is similar to a schedular that can execute sql queries at a defined frequency or time.
+    we can execute Single or Multiple Queries.
+    Compute resources for a task can selected bt:
+        Serverless (snowflake managed)
+        User Managed (one of the existing Virutal warehourse)
+
+
+
 use role accountadmin;
 
 create role task_owner;
