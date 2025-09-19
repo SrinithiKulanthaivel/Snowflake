@@ -59,3 +59,17 @@ step3 : Create an IAM role to access lambda and note rolename and role arn.
 step4 : Create an API gateway using rest API, in which we will create a method-> Post/Get/Delete/Update and give the lambda function name(already create lambda) and deploy it.and copy the api arn.
 step5 : 
 
+Other ways to connect with Snowflake : 
+
+Local system to Snowflake : In our local system, need to install Snowflake-python-connector.jar and need to give required configuration similar to sql db connection.
+
+AWS Glue : It is used to run the serverless jobs. we can create either in Python jobs/ spark jobs. And put the python code in Glue and run it. we can also pass parameters. 
+            In Glue , how many transcations we pass, each get executed separately in snowflake.  ie : 5 transformation - 5 execution in snowflake.
+
+PYSpark : Similar to Glue, but it will internally perfrom pushdown(filter) and then execute the required transcations. 
+            ie: if we pass 5 transcation, inside snowflake it will check all the transcation and first filter what are the common tasks and what needs to be executed.
+            And then only execute the required tasks. 
+      In Spark, we need to download snowflake connector and spark Snowflake jars. 
+
+
+
